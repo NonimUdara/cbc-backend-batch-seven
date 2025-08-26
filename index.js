@@ -33,7 +33,7 @@ app.use(
             //console.log(token);
 
             //decrypt the token
-            jwt.verify(token, JWT_SECRET,
+            jwt.verify(token, process.env.JWT_SECRET,
                 (err, decoded) => {
                     if (decoded == null) {
                         res.json({
