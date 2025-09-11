@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import Student from "./models/student.js"; // Import the Student model
 import studentRouter from "./routes/studentRouter.js";
 import userRouter from "./routes/userRouter.js";
+import orderRouter from "./routes/orderRouter.js";
 import jwt from "jsonwebtoken";
 import productRouter from "./routes/productRouter.js";
 import cors from "cors";
@@ -64,6 +65,7 @@ mongoose.connect(connectionString).then(
 app.use("/api/students", studentRouter);
 app.use("/api/users", userRouter);
 app.use("/api/products", productRouter);
+app.use("/api/orders", orderRouter)
 
 // function success(){
 //     console.log("Server is running successfully!");
