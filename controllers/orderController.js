@@ -1,5 +1,6 @@
 import Order from "../models/order.js";
 import Product from "../models/product.js";
+import { isAdmin, isCustomer } from "./userController.js";
 
 export async function createOrder(req, res) {
   //CBC0000001
@@ -133,4 +134,23 @@ export async function createOrder(req, res) {
       error: "Failed to create order",
     });
   }
+}
+
+export async function getOrders(req, res) {
+  
+  if(isAdmin(req)){
+    const orders = await Order.find().sort({ date: -1 });
+    res.json(orders);
+  } else if(isCustomer(req)) {
+    const user = req.user;
+    const orders = await Order.find({ email: user.email }).sort({ date: -1 });
+    res.json(orders);
+  } else {
+    res.status(403).json(
+      {
+        message: "You are not authorized to view orders"
+      }
+    )
+  }
+
 }
