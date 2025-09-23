@@ -1,7 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 // import Student from "./models/student.js"; // Import the Student model
-import studentRouter from "./routes/studentRouter.js";
+// import studentRouter from "./routes/studentRouter.js";
 import userRouter from "./routes/userRouter.js";
 import orderRouter from "./routes/orderRouter.js";
 import jwt from "jsonwebtoken";
