@@ -1,6 +1,6 @@
 import express from "express";
 import mongoose from "mongoose";
-import Student from "./models/student.js"; // Import the Student model
+// import Student from "./models/student.js"; // Import the Student model
 import studentRouter from "./routes/studentRouter.js";
 import userRouter from "./routes/userRouter.js";
 import orderRouter from "./routes/orderRouter.js";
@@ -62,7 +62,7 @@ mongoose.connect(connectionString).then(
     }
 )
 
-app.use("/api/students", studentRouter);
+// app.use("/api/students", studentRouter);
 app.use("/api/users", userRouter);
 app.use("/api/products", productRouter);
 app.use("/api/orders", orderRouter)
