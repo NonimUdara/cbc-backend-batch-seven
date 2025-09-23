@@ -66,7 +66,7 @@ export function loginUser(req, res) {
                             role: user.role,
                             isEmailVerified: user.isEmailVerified,
                         }
-                    });
+                    });                    
                 } else {
                     res.status(500).json({
                         error: "Invalid password"
@@ -77,7 +77,7 @@ export function loginUser(req, res) {
     )
 }
 
-export function isAdmin(req){
+export function isAdmin(req) {
     if (req.user == null) {
 
         return false;
@@ -92,7 +92,7 @@ export function isAdmin(req){
 
 }
 
-export function isCustomer(req){
+export function isCustomer(req) {
     if (req.user == null) {
 
         return false;
