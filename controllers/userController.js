@@ -105,3 +105,16 @@ export function isCustomer(req) {
 
     return true;
 }
+
+export function getUser(req, res) {
+    if (req.user == null) {
+        res.status(401).json({
+            message: "Unauthorized"
+        });
+        return;
+    } else {
+        req.user
+    }
+
+    res.json(req.user);
+}
