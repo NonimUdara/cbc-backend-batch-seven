@@ -53,6 +53,7 @@ export function loginUser(req, res) {
                             lastName: user.lastName,
                             role: user.role,
                             isEmailVerified: user.isEmailVerified,
+                            image: user.image
                         }, process.env.JWT_SECRET, // Use the secret from .env file
                     );
 
