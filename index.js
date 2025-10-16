@@ -24,6 +24,7 @@ app.use(
 
         // console.log("Http request received to the middleware");
         let token = req.header("Authorization");
+        // console.log("Token: ", token);
 
         //check have the token and if the token is valid
         if (token != null) {

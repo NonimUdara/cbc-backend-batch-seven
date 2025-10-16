@@ -249,3 +249,39 @@ export async function getAllUsers(req, res) {
         });
     }
 }
+
+export async function blockorUnblockUser(req, res) {
+
+    if(!isAdmin(req)){
+        res.status(403).json({
+            message: "You are not authorized to block or unblock a user"
+        })
+        return;
+    }
+
+    if(req.user.email == req.params.email){
+        res.status(400).json({
+            message: "You cannot block or unblock yourself"
+        })
+        return;
+    }
+
+    try{
+
+        await User.updateOne(
+            { email: req.params.email },
+            { isBlock: req.body.isBlock }
+        );
+
+        res.json({
+            message: "User blocked or unblocked successfully"
+        });
+
+    } catch (error) {
+        console.error("Error blocking or unblocking user:", error);
+        res.status(500).json({
+            error: "Failed to block or unblock user"
+        });
+    }
+
+}
