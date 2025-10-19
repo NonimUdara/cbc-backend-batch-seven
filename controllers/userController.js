@@ -44,6 +44,14 @@ export function loginUser(req, res) {
                     error: "User not found"
                 });
             } else {
+
+                if (user.isBlock) {
+                    res.status(403).json({
+                        message: "Your account has been blocked contact admin"
+                    });
+                    return;
+                }
+
                 const isPasswordMatching = bcrypt.compareSync(req.body.password, user.password);
                 if (isPasswordMatching) {
 
@@ -143,7 +151,7 @@ export async function googleLogin(req, res) {
             }
         );
 
-        console.log(googleResponse.data);
+        // console.log(googleResponse.data);
 
         const googleUser = googleResponse.data;
 
@@ -193,6 +201,14 @@ export async function googleLogin(req, res) {
             return;
 
         } else {
+
+            if (user.isBlock) {
+                res.status(403).json({
+                    message: "Your account has been blocked contact admin"
+                });
+                return;
+            }
+
             //login the user
             const jwtToken = jwt.sign(
                 {
