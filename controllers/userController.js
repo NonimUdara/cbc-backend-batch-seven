@@ -2,6 +2,22 @@ import axios from "axios";
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+import OTP from "../models/otpModel.js";
+
+dotenv.config();
+
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.APP_PASSWORD
+    }
+});
 
 export function createUser(req, res) {
 
@@ -182,7 +198,7 @@ export async function googleLogin(req, res) {
                     role: savedUser.role,
                     isEmailVerified: savedUser.isEmailVerified,
                     image: savedUser.image
-                }, 
+                },
                 process.env.JWT_SECRET, // Use the secret from .env file
             );
 
@@ -218,7 +234,7 @@ export async function googleLogin(req, res) {
                     role: user.role,
                     isEmailVerified: user.isEmailVerified,
                     image: user.image
-                }, 
+                },
                 process.env.JWT_SECRET, // Use the secret from .env file
             );
             res.json({
@@ -234,7 +250,7 @@ export async function googleLogin(req, res) {
                 },
             });
             return;
-            
+
         }
 
 
@@ -249,7 +265,7 @@ export async function googleLogin(req, res) {
 }
 
 export async function getAllUsers(req, res) {
-    if(!isAdmin(req)){
+    if (!isAdmin(req)) {
         res.status(403).json({
             message: "You are not authorized to view all users"
         })
@@ -268,21 +284,21 @@ export async function getAllUsers(req, res) {
 
 export async function blockorUnblockUser(req, res) {
 
-    if(!isAdmin(req)){
+    if (!isAdmin(req)) {
         res.status(403).json({
             message: "You are not authorized to block or unblock a user"
         })
         return;
     }
 
-    if(req.user.email == req.params.email){
+    if (req.user.email == req.params.email) {
         res.status(400).json({
             message: "You cannot block or unblock yourself"
         })
         return;
     }
 
-    try{
+    try {
 
         await User.updateOne(
             { email: req.params.email },
@@ -297,6 +313,88 @@ export async function blockorUnblockUser(req, res) {
         console.error("Error blocking or unblocking user:", error);
         res.status(500).json({
             error: "Failed to block or unblock user"
+        });
+    }
+
+}
+
+export async function sendOTP(req, res) {
+
+    const email = req.params.email;
+    if (email == null) {
+        res.status(400).json({
+            message: "Email is required"
+        })
+        return;
+    }
+
+    //100000 - 999999
+    const otp = Math.floor(100000 + Math.random() * 900000);
+
+    try {
+        await OTP.deleteMany({
+            email: email
+        });
+
+        const newOTP = new OTP({
+            email: email,
+            otp: otp
+        });
+
+        await newOTP.save();
+
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "OTP for password reset",
+            text: `Your OTP is ${otp}`
+        });
+
+        res.json({
+            message: "OTP sent successfully"
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            message: "Failed to send OTP"
+        });
+    }
+}
+
+export async function changePasswordViaOTP(req, res) {
+    const email = req.body.email;
+    const otp = req.body.otp;
+    const newPassword = req.body.newPassword;
+
+    try {
+        const otpRecord = await OTP.findOne({
+            email: email,
+            otp: otp
+        });
+
+        if (otpRecord == null) {
+            res.status(400).json({
+                message: "Invalid OTP"
+            });
+            return;
+        }
+
+        await OTP.deleteMany({
+            email: email
+        });
+
+        const hashedPassword = bcrypt.hashSync(newPassword, 10);
+
+        await User.updateOne(
+            { email: email },
+            { password: hashedPassword }
+        );
+        res.json({
+            message: "Password changed successfully"
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to change password"
         });
     }
 
