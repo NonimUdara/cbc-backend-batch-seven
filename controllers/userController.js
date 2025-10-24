@@ -333,6 +333,20 @@ export async function sendOTP(req, res) {
     const otp = Math.floor(100000 + Math.random() * 900000);
 
     try {
+
+        const user = await User.findOne({
+            email: email
+        });
+
+        const firstName = user ? user.firstName : "User";
+
+        if (user == null) {
+            res.status(404).json({
+                error: "User not found"
+            });
+            return;
+        }
+
         await OTP.deleteMany({
             email: email
         });
@@ -353,13 +367,14 @@ export async function sendOTP(req, res) {
                 companyName: "Crystal Beauty Clear",
                 supportEmail: "support@nonimtech.com",
                 validityMinutes: 10,
+                firstName: firstName,
             }),
         });
-
 
         res.json({
             message: "OTP sent successfully"
         });
+        
 
     } catch (err) {
         res.status(500).json({
