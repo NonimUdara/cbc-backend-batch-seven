@@ -16,7 +16,7 @@ const transporter = nodemailer.createTransport({
     secure: false,
     auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.App_PASSWORD
+        pass: process.env.App_PASSWORD,
     }
 });
 
@@ -358,18 +358,23 @@ export async function sendOTP(req, res) {
 
         await newOTP.save();
 
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: "🔒 Your OTP for Password Reset",
-            html: getDesignedEmail({
-                otp,
-                companyName: "Crystal Beauty Clear",
-                supportEmail: "support@nonimtech.com",
-                validityMinutes: 10,
-                firstName: firstName,
-            }),
-        });
+        try {
+            await transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: email,
+                subject: "🔒 Your OTP for Password Reset",
+                html: getDesignedEmail({
+                    otp,
+                    companyName: "Crystal Beauty Clear",
+                    supportEmail: "support@nonimtech.com",
+                    validityMinutes: 10,
+                    firstName: firstName,
+                }),
+            });
+            console.log("✅ Email sent to", email);
+        } catch (err) {
+            console.error("❌ Failed to send email:", err);
+        }
 
         res.json({
             message: "OTP sent successfully"
