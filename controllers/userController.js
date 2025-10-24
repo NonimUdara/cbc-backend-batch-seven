@@ -374,11 +374,13 @@ export async function sendOTP(req, res) {
         res.json({
             message: "OTP sent successfully"
         });
-        
+
 
     } catch (err) {
+        console.error("🔥 Error in sendOTP:", err);
         res.status(500).json({
-            message: "Failed to send OTP"
+            message: "Failed to send OTP",
+            error: err.message, // Add this
         });
     }
 }
