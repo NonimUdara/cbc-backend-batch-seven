@@ -16,7 +16,7 @@ const transporter = nodemailer.createTransport({
     secure: false,
     auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.App_PASSWORD,
+        pass: process.env.APP_PASSWORD,
     }
 });
 
@@ -357,10 +357,6 @@ export async function sendOTP(req, res) {
         });
 
         await newOTP.save();
-
-        await transporter.verify()
-            .then(() => console.log("✅ SMTP connection successful"))
-            .catch(err => console.error("❌ SMTP connection failed:", err));
 
         try {
             await transporter.sendMail({
