@@ -358,6 +358,10 @@ export async function sendOTP(req, res) {
 
         await newOTP.save();
 
+        await transporter.verify()
+            .then(() => console.log("✅ SMTP connection successful"))
+            .catch(err => console.error("❌ SMTP connection failed:", err));
+
         try {
             await transporter.sendMail({
                 from: process.env.EMAIL_USER,
