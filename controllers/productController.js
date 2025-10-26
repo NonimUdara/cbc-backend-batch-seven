@@ -3,7 +3,7 @@ import { isAdmin } from "./userController.js";
 
 export async function createProduct(req, res) {
 
-    if(!isAdmin(req)){
+    if (!isAdmin(req)) {
         res.status(403).json({
             message: "You are not authorized to create a product"
         });
@@ -29,7 +29,7 @@ export async function createProduct(req, res) {
         res.status(500).json({
             error: "Failed to create product"
         });
-        
+
     }
 
 }
@@ -55,25 +55,25 @@ export async function getProducts(req, res) {
 
 export async function deleteProduct(req, res) {
 
-    if(!isAdmin(req)){
+    if (!isAdmin(req)) {
         res.status(403).json({
             message: "You are not authorized to delete a product"
         });
         return;
     }
 
-    try{
+    try {
         const productID = req.params.productID;
 
-        await Product.deleteOne({ 
-            productID: productID 
+        await Product.deleteOne({
+            productID: productID
         });
 
         res.json({
             message: "Product deleted successfully"
         });
 
-    } catch(err){
+    } catch (err) {
         console.error("Error deleting product:", err);
         res.status(500).json({
             error: "Failed to delete product"
@@ -85,7 +85,7 @@ export async function deleteProduct(req, res) {
 
 export async function updateProduct(req, res) {
 
-    if(!isAdmin(req)){
+    if (!isAdmin(req)) {
         res.status(403).json({
             message: "You are not authorized to update a product"
         });
@@ -96,7 +96,7 @@ export async function updateProduct(req, res) {
         const productID = req.params.productID;
         const updatedData = req.body;
         await Product.updateOne(
-            {productID: productID},
+            { productID: productID },
             updatedData
         );
         res.json({
@@ -114,17 +114,37 @@ export async function updateProduct(req, res) {
 export async function getProductById(req, res) {
     try {
         const productID = req.params.productID;
-        const product = await Product.findOne  
+        const product = await Product.findOne
             ({ productID: productID });
         if (product == null) {
-            res.status(404).json({ 
-                error: "Product not found" 
+            res.status(404).json({
+                error: "Product not found"
             });
         } else {
             res.json(product);
         }
-    } catch (error) {   
+    } catch (error) {
         console.error("Error fetching product:", error);
         res.status(500).json({ error: "Failed to fetch product by ID" });
+    }
+}
+
+export async function getProductsBySearch(req, res) {
+    try {
+
+        const query = req.params.query;
+
+        const products = await Product.find(
+            {
+                name: { $regex: query, $options: "i" }
+            }
+        )
+        res.json(products);
+
+    } catch (error) {
+        console.error("Error searching products:", error);
+        res.status(500).json({
+            error: "Failed to search products"
+        });
     }
 }
