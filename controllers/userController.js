@@ -6,6 +6,7 @@ import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import OTP from "../models/otpModel.js";
 import getDesignedEmail from "../lib/emailDesigner.js";
+import sgMail from "../config/sendgrid.js";
 
 dotenv.config();
 
@@ -319,77 +320,123 @@ export async function blockorUnblockUser(req, res) {
 
 }
 
-export async function sendOTP(req, res) {
+// export async function sendOTP(req, res) {
 
+//     const email = req.params.email;
+//     if (email == null) {
+//         res.status(400).json({
+//             message: "Email is required"
+//         })
+//         return;
+//     }
+
+//     //100000 - 999999
+//     const otp = Math.floor(100000 + Math.random() * 900000);
+
+//     try {
+
+//         const user = await User.findOne({
+//             email: email
+//         });
+
+//         const firstName = user ? user.firstName : "User";
+
+//         if (user == null) {
+//             res.status(404).json({
+//                 error: "User not found"
+//             });
+//             return;
+//         }
+
+//         await OTP.deleteMany({
+//             email: email
+//         });
+
+//         const newOTP = new OTP({
+//             email: email,
+//             otp: otp
+//         });
+
+//         await newOTP.save();
+
+//         await transporter.verify()
+//             .then(() => console.log("✅ SMTP connection successful"))
+//             .catch(err => console.error("❌ SMTP connection failed:", err));
+
+//         try {
+//             await transporter.sendMail({
+//                 from: process.env.EMAIL_USER,
+//                 to: email,
+//                 subject: "🔒 Your OTP for Password Reset",
+//                 html: getDesignedEmail({
+//                     otp,
+//                     companyName: "Crystal Beauty Clear",
+//                     supportEmail: "support@nonimtech.com",
+//                     validityMinutes: 10,
+//                     firstName: firstName,
+//                 }),
+//             });
+//             console.log("✅ Email sent to", email);
+//         } catch (err) {
+//             console.error("❌ Failed to send email:", err);
+//         }
+
+//         res.json({
+//             message: "OTP sent successfully"
+//         });
+
+
+//     } catch (err) {
+//         console.error("🔥 Error in sendOTP:", err);
+//         res.status(500).json({
+//             message: "Failed to send OTP",
+//             error: err.message, // Add this
+//         });
+//     }
+// }
+
+export async function sendOTP(req, res) {
     const email = req.params.email;
-    if (email == null) {
-        res.status(400).json({
-            message: "Email is required"
-        })
-        return;
+
+    if (!email) {
+        return res.status(400).json({ message: "Email is required" });
     }
 
-    //100000 - 999999
     const otp = Math.floor(100000 + Math.random() * 900000);
 
     try {
+        const user = await User.findOne({ email });
 
-        const user = await User.findOne({
-            email: email
-        });
-
-        const firstName = user ? user.firstName : "User";
-
-        if (user == null) {
-            res.status(404).json({
-                error: "User not found"
-            });
-            return;
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
         }
 
-        await OTP.deleteMany({
-            email: email
-        });
+        await OTP.deleteMany({ email });
 
-        const newOTP = new OTP({
-            email: email,
-            otp: otp
-        });
+        await OTP.create({ email, otp });
 
-        await newOTP.save();
+        const msg = {
+            to: email,
+            from: process.env.SENDGRID_FROM_EMAIL,
+            subject: "🔒 Your OTP for Password Reset",
+            html: getDesignedEmail({
+                otp,
+                companyName: "Crystal Beauty Clear",
+                supportEmail: "support@nonimtech.com",
+                validityMinutes: 10,
+                firstName: user.firstName || "User",
+            }),
+        };
 
-        await transporter.verify()
-            .then(() => console.log("✅ SMTP connection successful"))
-            .catch(err => console.error("❌ SMTP connection failed:", err));
+        await sgMail.send(msg);
 
-        try {
-            await transporter.sendMail({
-                from: process.env.EMAIL_USER,
-                to: email,
-                subject: "🔒 Your OTP for Password Reset",
-                html: getDesignedEmail({
-                    otp,
-                    companyName: "Crystal Beauty Clear",
-                    supportEmail: "support@nonimtech.com",
-                    validityMinutes: 10,
-                    firstName: firstName,
-                }),
-            });
-            console.log("✅ Email sent to", email);
-        } catch (err) {
-            console.error("❌ Failed to send email:", err);
-        }
-
-        res.json({
-            message: "OTP sent successfully"
-        });
-
+        res.json({ message: "OTP sent successfully" });
 
     } catch (err) {
         console.error("🔥 Error in sendOTP:", err);
         res.status(500).json({
             message: "Failed to send OTP",
-            error: err.message, // Add this
+            error: err.message,
         });
     }
 }
