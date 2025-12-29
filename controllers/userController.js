@@ -320,6 +320,7 @@ export async function blockorUnblockUser(req, res) {
 
 }
 
+// sendOTP function using NodeMailer
 // export async function sendOTP(req, res) {
 
 //     const email = req.params.email;
@@ -395,6 +396,7 @@ export async function blockorUnblockUser(req, res) {
 //     }
 // }
 
+// Improved sendOTP function using SendGrid
 export async function sendOTP(req, res) {
     const email = req.params.email;
 
