@@ -21,34 +21,36 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-export function createUser(req, res) {
+export async function createUser(req, res) {
+  try {
+    const { email, firstName, lastName, password } = req.body;
 
-    const hashedPassword = bcrypt.hashSync(req.body.password, 10);
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ message: "User with this email already exists." });
+    }
 
-    const user = new User(
-        {
-            email: req.body.email,
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            password: hashedPassword,
-        }
+    // Hash password
+    const hashedPassword = bcrypt.hashSync(password, 10);
 
-    )
+    // Create new user
+    const user = new User({
+      email,
+      firstName,
+      lastName,
+      password: hashedPassword,
+    });
 
-    user.save().then(
-        () => {
-            res.json({
-                message: "User created successfully"
-            })
-        }
-    ).catch(
-        () => {
-            res.json({
-                error: "Failed to create user"
-            })
-        }
-    )
+    await user.save();
+
+    res.status(201).json({ message: "User created successfully" });
+  } catch (error) {
+    console.error("Error creating user:", error);
+    res.status(500).json({ message: "Failed to create user" });
+  }
 }
+
 
 export function loginUser(req, res) {
     User.findOne(
