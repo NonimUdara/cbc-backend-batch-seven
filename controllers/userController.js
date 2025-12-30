@@ -485,56 +485,46 @@ export async function changePasswordViaOTP(req, res) {
 }
 
 export async function updateUserData(req, res) {
-    if (req.user == null) {
-        res.status(401).json({
-            message: "Unauthorized"
-        });
-        return;
-    }
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
-    try {
+  try {
+    const updatedUser = await User.findOneAndUpdate(
+      { email: req.user.email },
+      {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        image: req.body.image,
+      },
+      { new: true } // 🔥 return updated data
+    );
 
-        await User.updateOne({
-            email: req.user.email
-        },{
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            image: req.body.image
-        })
-
-        res.json({
-            message: "User data updated successfully"
-        });
-
-        
-    } catch (error) {
-        res.status(500).json({
-            message: "Failed to update user data"
-        });
-    }
-
+    res.json({
+      message: "Profile updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update user data" });
+  }
 }
 
+
 export async function updatePassword(req, res) {
-    if (req.user == null) {
-        res.status(401).json({
-            message: "Unauthorized"
-        });
-        return;
-    }
-    try {
-        const hashedPassword = bcrypt.hashSync(req.body.password, 10);
-        await User.updateOne({
-            email: req.user.email
-        },{
-            password: hashedPassword
-        })
-        res.json({
-            message: "Password updated successfully"
-        });
-    } catch (error) {
-        res.status(500).json({
-            message: "Failed to update password"
-        });
-    }
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const hashedPassword = bcrypt.hashSync(req.body.password, 10);
+
+    await User.updateOne(
+      { email: req.user.email },
+      { password: hashedPassword }
+    );
+
+    res.json({ message: "Password updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update password" });
+  }
 }
