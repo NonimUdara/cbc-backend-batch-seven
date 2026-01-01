@@ -128,7 +128,7 @@ export function isCustomer(req) {
         return false;
     }
 
-    if (req.user.role !== "customer") {
+    if (req.user.role !== "user") {
 
         return false;
     }
