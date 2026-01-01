@@ -136,17 +136,23 @@ export function isCustomer(req) {
     return true;
 }
 
-export function getUser(req, res) {
-    if (req.user == null) {
-        res.status(401).json({
-            message: "Unauthorized"
-        });
-        return;
-    } else {
-        req.user
+export async function getUser(req, res) {
+    if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
     }
 
-    res.json(req.user);
+    try {
+        // Fetch full one user from database
+        const user = await User.findOne({ email: req.user.email }).select("-password"); // exclude password
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.json(user); // send full user data
+    } catch (err) {
+        console.error("Error fetching user:", err);
+        res.status(500).json({ message: "Server error" });
+    }
 }
 
 export async function googleLogin(req, res) {
