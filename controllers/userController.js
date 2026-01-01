@@ -322,6 +322,115 @@ export async function blockorUnblockUser(req, res) {
 
 }
 
+export async function sendMESSAGE(req, res) {
+  const { name, email, message } = req.body;
+
+  // Basic validation
+  if (!name || !email || !message) {
+    return res
+      .status(400)
+      .json({ message: "Name, email, and message are required" });
+  }
+
+  try {
+    const msg = {
+      to: process.env.SUPPORT_EMAIL || "nonimudara123@gmail.com",
+      from: process.env.SENDGRID_FROM_EMAIL, // verified sender
+      subject: `📩 New Contact Message – ${name}`,
+      html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8" />
+          <title>New Contact Message</title>
+        </head>
+        <body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, Helvetica, sans-serif;">
+          
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td align="center" style="padding:40px 15px;">
+                
+                <!-- Card -->
+                <table width="100%" max-width="600px" cellpadding="0" cellspacing="0"
+                  style="background:#ffffff; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.08); overflow:hidden;">
+                  
+                  <!-- Header -->
+                  <tr>
+                    <td style="background:#FA812F; padding:24px 30px; text-align:center;">
+                      <h1 style="margin:0; color:#ffffff; font-size:24px; letter-spacing:0.5px;">
+                        New Contact Message
+                      </h1>
+                      <p style="margin:6px 0 0; color:#fff; opacity:0.9;">
+                        Crystal Beauty Clear
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Content -->
+                  <tr>
+                    <td style="padding:30px;">
+                      
+                      <p style="font-size:16px; color:#393e46; margin-bottom:24px;">
+                        You’ve received a new message from your website contact form.
+                      </p>
+
+                      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+                        <tr>
+                          <td style="padding:12px 0; font-weight:bold; color:#111;">👤 Name</td>
+                          <td style="padding:12px 0; color:#393e46;">${name}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding:12px 0; font-weight:bold; color:#111;">📧 Email</td>
+                          <td style="padding:12px 0; color:#393e46;">${email}</td>
+                        </tr>
+                      </table>
+
+                      <div style="background:#f9fafb; border-left:4px solid #FA812F; padding:18px; border-radius:10px;">
+                        <p style="margin:0; font-weight:bold; color:#111;">💬 Message</p>
+                        <p style="margin-top:10px; color:#393e46; line-height:1.6;">
+                          ${message.replace(/\n/g, "<br/>")}
+                        </p>
+                      </div>
+
+                    </td>
+                  </tr>
+
+                  <!-- Footer -->
+                  <tr>
+                    <td style="padding:20px 30px; background:#f4f6f8; text-align:center;">
+                      <p style="margin:0; font-size:13px; color:#777;">
+                        This email was sent from your website contact page.
+                      </p>
+                      <p style="margin:6px 0 0; font-size:12px; color:#aaa;">
+                        © ${new Date().getFullYear()} Crystal Beauty Clear
+                      </p>
+                    </td>
+                  </tr>
+
+                </table>
+                <!-- End Card -->
+
+              </td>
+            </tr>
+          </table>
+
+        </body>
+      </html>
+      `,
+    };
+
+    await sgMail.send(msg);
+
+    res.status(200).json({ message: "Message sent successfully" });
+  } catch (err) {
+    console.error("🔥 Error sending contact message:", err);
+    res
+      .status(500)
+      .json({ message: "Failed to send message", error: err.message });
+  }
+}
+
+
 // sendOTP function using NodeMailer
 // export async function sendOTP(req, res) {
 
